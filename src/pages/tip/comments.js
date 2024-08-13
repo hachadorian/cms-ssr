@@ -23,7 +23,7 @@ const Highlight = ({ input, data }) => (
   />
 );
 
-const title = "TIP Comments";
+const title = "Draft FY2025 TIP for Pennsylvania Public Comments and Responses";
 
 const CommentViewer = ({ data, location }) => {
   const [input, setInput] = useState("");
@@ -50,19 +50,27 @@ const CommentViewer = ({ data, location }) => {
 
   const columns = [
     {
-      name: "ID",
+      name: "Comment ID",
       cell: (row) => <Highlight data={row.commentid} input={input} />,
       sortable: true,
+      maxWidth: "10%",
+      sortFunction: (a, b) => a.commentid - b.commentid,
     },
     {
       name: "Commentor",
       cell: (row) => <Highlight data={row.commentor} input={input} />,
       sortable: true,
+      sortFunction: (a, b) =>
+        (a.commentor === "") - (b.commentor === "") ||
+        a.AGENCY.toLowerCase().localeCompare(b.commentor.toLowerCase()),
     },
     {
-      name: "Agency",
+      name: "Commentor Agency",
       cell: (row) => <Highlight data={row.AGENCY} input={input} />,
       sortable: true,
+      sortFunction: (a, b) =>
+        (a.AGENCY === "") - (b.AGENCY === "") ||
+        a.AGENCY.toLowerCase().localeCompare(b.AGENCY.toLowerCase()),
     },
     {
       name: "PDF",
@@ -71,6 +79,14 @@ const CommentViewer = ({ data, location }) => {
       sortFunction: (a, b) =>
         (a.FILELINK2 === "") - (b.FILELINK2 === "") ||
         a.FILELINK2 - b.FILELINK2,
+      maxWidth: "10%",
+    },
+    {
+      name: "MPMS #",
+      cell: (row) => <Highlight data={row.MPMS} input={input} />,
+      sortable: true,
+      sortFunction: (a, b) =>
+        (a.MPMS === "") - (b.MPMS === "") || a.MPMS - b.MPMS,
     },
   ];
 
@@ -79,12 +95,23 @@ const CommentViewer = ({ data, location }) => {
     data: filteredComments,
   };
 
-  comments.map(
-    (comment) => comment.FILELINK2 && console.log(comment.FILELINK2)
-  );
   return (
     <>
       <div className="container mx-auto mb-8 px-8 py-4 md:grid-cols-[auto_1fr]">
+        <h1 className="mt-1 max-w-[80ch] px-4 text-4xl font-bold text-[color:var(--color-h1)] print:max-w-full print:p-0 md:col-span-2 md:col-start-2 md:p-0">
+          {title}
+        </h1>
+        <p className="py-4">
+          DVRPC firmly believes that meaningful public participation results in
+          better planning outcomes. Public participation is a process, not a
+          single event. DVRPC provides multiple opportunities for a wide variety
+          of stakeholders, including vulnerable and historically marginalized
+          populations, public officials, and the private sector, to provide
+          comments on and stay informed about transportation planning and
+          programming decisions. By incorporating local information, residents'
+          lived experiences, and subject matter expertise, plans are more
+          implementable, beneficial, and sustainable.
+        </p>
         <input
           className="py- 1 rounded border px-2 outline-none"
           placeholder="Filter Data"
@@ -97,7 +124,22 @@ const CommentViewer = ({ data, location }) => {
           expandableRows
           expandableRowsComponent={({ data }) => (
             <div className="flex flex-row divide-x [&>*]:basis-1/2">
-              <Highlight data={data.comment} input={input} />
+              <Highlight
+                data={
+                  data.comment
+                    .trim()
+                    .replace(/[\r\n]+/gm, "<br/>")
+                    .replace(/â/g, "&rsquo;")
+                    .replace(/â/g, "&#8220;")
+                    .replace(/â/g, "&#8221;")
+                    .replace(/Â\s/g, "")
+                    .replace(
+                      /[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*/g,
+                      "<i>[email removed]</i>"
+                    ) ?? ""
+                }
+                input={input}
+              />
               <Highlight data={data.Responses} input={input} />
             </div>
           )}
